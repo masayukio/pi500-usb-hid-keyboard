@@ -61,6 +61,7 @@ This forces the SoC USB controller into peripheral (device) mode.
 git clone https://github.com/masayukio/pi500-usb-hid-keyboard.git
 cd pi500-usb-hid-keyboard
 sudo ./install.sh
+sudo reboot
 ```
 
 1. Connect Pi500+ USB-C port to the host PC
@@ -73,6 +74,7 @@ sudo ./install.sh
 
 ```bash
 sudo ./uninstall.sh
+sudo reboot
 ```
 
 Removes:
@@ -83,18 +85,6 @@ Removes:
 Reboot is recommended after uninstall.
 
 ---
-
-## ⚙️ Keyboard Layout Support
-
-This project uses **physical key mapping** rather than character-based input:
-
-- **Physical keys** are sent as HID scancodes (hardware-independent)
-- Works with **both JIS (106/109) and US (104) keyboard layouts**
-- Simply configure the keyboard layout **on the host system**:
-  - Windows: Settings → Time & Language → Language → Keyboard
-  - Linux: `setxkbmap us` or `setxkbmap jp`
-
-No Pi-side configuration needed—just set your preferred layout on the host PC.
 
 ### Testing Status
 
