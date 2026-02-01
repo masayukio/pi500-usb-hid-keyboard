@@ -125,13 +125,8 @@ KEY_TO_HID: Dict[int, int] = {
     ecodes.KEY_KATAKANAHIRAGANA: 0x88,  # HID 0x88 (Kana)
     ecodes.KEY_YEN: 0x89,        # HID 0x89 (International 3 / Yen)
     ecodes.KEY_RO: 0x87,         # HID 0x87 (International 1 / Ro)
+    ecodes.KEY_ZENKAKUHANKAKU: 0x94,  # HID 0x94 (LANG5 - Zenkaku/Hankaku toggle)
 }
-
-# Some kernels use different keycodes for JIS keys; we can alias if present.
-# We'll populate aliases at runtime if those ecodes exist.
-JIS_ALIASES = [
-    ("KEY_ZENKAKUHANKAKU", 0x35),  # often maps to grave / or a special key; adjust if needed
-]
 
 
 def build_report(mod_mask: int, pressed_usages: Set[int]) -> bytes:
@@ -187,12 +182,6 @@ def main() -> int:
     ap.add_argument("--grab", action="store_true", help="exclusive grab input device (prevents local handling)")
     ap.add_argument("--show", action="store_true", help="print key events for debugging")
     args = ap.parse_args()
-
-    # Add JIS aliases if available
-    for name, hid in JIS_ALIASES:
-        code = getattr(ecodes, name, None)
-        if isinstance(code, int) and code not in KEY_TO_HID:
-            KEY_TO_HID[code] = hid
 
     dev = InputDevice(args.event) if args.event else pick_keyboard_device()
     print(f"[+] Using input device: {dev.path} ({dev.name})", file=sys.stderr)

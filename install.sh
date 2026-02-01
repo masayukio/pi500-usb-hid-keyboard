@@ -90,6 +90,7 @@ log_info "Copying files..."
 cp -v "$SCRIPT_DIR/hid-keyboard-bridge.py" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/check-gadget-ready.sh" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/setup-hid-gadget.sh" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/report_desc.bin" "$INSTALL_DIR/"
 
 # Set executable permissions
 chmod +x "$INSTALL_DIR/hid-keyboard-bridge.py"

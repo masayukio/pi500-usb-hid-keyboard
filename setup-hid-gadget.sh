@@ -74,16 +74,18 @@ echo 250            > configs/c.1/MaxPower
 log "Creating HID function"
 mkdir -p functions/hid.usb0
 
-echo 1 > functions/hid.usb0/protocol      # keyboard
-echo 0 > functions/hid.usb0/subclass      # BIOS不要
+echo 1 > functions/hid.usb0/protocol   # Keyboard
+echo 1 > functions/hid.usb0/subclass   # Boot keyboard
 echo 8 > functions/hid.usb0/report_length
 
-# Correct, Windows-safe HID report descriptor (Boot keyboard compatible)
-cat > functions/hid.usb0/report_desc << 'EOF'
-\x05\x01\x09\x06\xa1\x01\x05\x07\x19\xe0\x29\xe7\x15\x00\x25\x01\x75\x01\x95\x08\x81\x02\
-\x95\x01\x75\x08\x81\x03\x95\x05\x75\x01\x05\x08\x19\x01\x29\x05\x91\x02\
-\x95\x01\x75\x03\x91\x03\x95\x06\x75\x08\x15\x00\x25\x65\x05\x07\x19\x00\x29\x65\x81\x00\xc0
-EOF
+# Windows-safe boot keyboard report descriptor
+#cat << 'EOF' | xxd -r -p > functions/hid.usb0/report_desc
+#05010906a101050719e029e715002501750195088102
+#950175088103
+#95067508150025650507190029658100c0
+#EOF
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+cat "$SCRIPT_DIR/report_desc.bin" > functions/hid.usb0/report_desc
 
 # Link function
 ln -s functions/hid.usb0 configs/c.1/
