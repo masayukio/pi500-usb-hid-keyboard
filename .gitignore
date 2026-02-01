@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+
+# Generated service file (use .template instead)
+pi500-hid-keyboard.service
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

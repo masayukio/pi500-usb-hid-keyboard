@@ -1,0 +1,25 @@
+[Unit]
+Description=Pi 500+ Internal Keyboard -> USB HID (OTG at boot)
+Documentation=local
+ConditionPathExists=/dev/hidg0
+ConditionPathExists=/sys/class/udc
+After=local-fs.target sysinit.target
+Wants=local-fs.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/bash {{INSTALL_DIR}}/check-gadget-ready.sh
+ExecStart=/usr/bin/python3 {{INSTALL_DIR}}/hid-keyboard-bridge.py --grab
+Restart=no
+KillSignal=SIGINT
+TimeoutStopSec=2
+
+# 最小限の権限(必要なところだけ書き込み許可)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=false
+ReadWritePaths=/dev/hidg0 /sys/kernel/config /sys/class/udc /dev/input
+
+[Install]
+WantedBy=multi-user.target
