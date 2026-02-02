@@ -18,32 +18,49 @@ fi
 
 modprobe libcomposite
 
-# ---- cleanup (idempotent) ------------------------------------
+# Check if UDC is available (OTG mode ready)
+UDC="$(ls /sys/class/udc 2>/dev/null | head -n1 || true)"
+if [ -z "$UDC" ]; then
+  log "No UDC found - OTG mode not available, exiting gracefully"
+  exit 0
+fi
+
+# ---- check if already configured -----------------------------
 
 if [ -d "$G" ]; then
-  log "Existing gadget found, cleaning up..."
-
-  # Unbind if bound
-  if [ -f "$G/UDC" ]; then
-    echo "" > "$G/UDC" || true
+  # Check if gadget is already bound to UDC
+  CURRENT_UDC="$(cat "$G/UDC" 2>/dev/null || true)"
+  if [ -n "$CURRENT_UDC" ]; then
+    log "Gadget $GADGET already configured and bound to $CURRENT_UDC"
+    exit 0
   fi
+
+  # Gadget exists but not bound - need to clean up
+  log "Existing gadget found but not bound, cleaning up..."
 
   # Remove function links
   if [ -d "$G/configs" ]; then
-    find "$G/configs" -type l -maxdepth 2 -exec rm -f {} \; || true
+    find "$G/configs" -maxdepth 2 -type l -exec rm -f {} \; || true
   fi
 
-  # Remove functions
-  rm -rf "$G/functions" || true
-
   # Remove configs
-  rm -rf "$G/configs" || true
+  if [ -d "$G/configs/c.1/strings" ]; then
+    rmdir "$G/configs/c.1/strings/0x409" 2>/dev/null || true
+    rmdir "$G/configs/c.1/strings" 2>/dev/null || true
+  fi
+  rmdir "$G/configs/c.1" 2>/dev/null || true
+  rmdir "$G/configs" 2>/dev/null || true
+
+  # Remove functions
+  rmdir "$G/functions/hid.usb0" 2>/dev/null || true
+  rmdir "$G/functions" 2>/dev/null || true
 
   # Remove strings
-  rm -rf "$G/strings" || true
+  rmdir "$G/strings/0x409" 2>/dev/null || true
+  rmdir "$G/strings" 2>/dev/null || true
 
   # Finally remove gadget dir
-  rmdir "$G" || true
+  rmdir "$G" 2>/dev/null || true
 fi
 
 # ---- create gadget -------------------------------------------
@@ -91,12 +108,6 @@ cat "$SCRIPT_DIR/report_desc.bin" > functions/hid.usb0/report_desc
 ln -s functions/hid.usb0 configs/c.1/
 
 # ---- bind UDC ------------------------------------------------
-
-UDC="$(ls /sys/class/udc | head -n 1 || true)"
-if [ -z "$UDC" ]; then
-  echo "No UDC found. Is OTG enabled (dwc2,dr_mode=peripheral)?" >&2
-  exit 1
-fi
 
 log "Binding to UDC: $UDC"
 echo "$UDC" > UDC

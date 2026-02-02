@@ -11,9 +11,10 @@ Type on the Pi500+, and keystrokes appear on a connected host
 
 - Raspberry Pi 500+ acts as a **standard USB keyboard**
 - Linux USB HID gadget (configfs)
-- systemd-based auto startup
+- systemd-based auto startup (USB gadget automatically configured at boot)
 - Physical key mapping (works with both JIS and US keyboard layouts)
 - No custom drivers required on host OS
+- Idempotent installation - safe to run install.sh multiple times
 
 ---
 
@@ -61,12 +62,13 @@ This forces the SoC USB controller into peripheral (device) mode.
 git clone https://github.com/masayukio/pi500-usb-hid-keyboard.git
 cd pi500-usb-hid-keyboard
 sudo ./install.sh
-sudo reboot
 ```
 
 1. Connect Pi500+ USB-C port to the host PC
 2. Start typing on Pi500+
 3. The host detects it as a USB keyboard
+
+**Note:** The service starts automatically after installation. After reboot, the USB gadget is automatically reconfigured at boot time.
 
 ---
 
