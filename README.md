@@ -1,5 +1,11 @@
 # pi500-usb-hid-keyboard
 
+```text
++--------------------+             +-------------------+
+| Windows / Linux PC | -- USB-C -- | Raspberry Pi 500+ |
++--------------------+             +-------------------+
+```
+
 Turn your **Raspberry Pi 500+** into a **USB HID keyboard**.
 
 Type on the Pi500+, and keystrokes appear on a connected host
@@ -12,9 +18,7 @@ Type on the Pi500+, and keystrokes appear on a connected host
 - Raspberry Pi 500+ acts as a **standard USB keyboard**
 - Linux USB HID gadget (configfs)
 - systemd-based auto startup (USB gadget automatically configured at boot)
-- Physical key mapping (works with both JIS and US keyboard layouts)
 - No custom drivers required on host OS
-- Idempotent installation - safe to run install.sh multiple times
 
 ---
 
@@ -22,10 +26,10 @@ Type on the Pi500+, and keystrokes appear on a connected host
 
 - Raspberry Pi 500+
 - Raspberry Pi OS (Trixie)
-- USB-C cable (data-capable)
+- USB-C cable (data-capable? I'm using USB4 cable)
 - Root access (sudo)
 
-⚠️ This project relies on USB gadget mode supported on Pi500+.
+⚠️ This project relies on USB gadget mode supported on Pi 500+. A low-voltage warning may be displayed.
 
 ### 🔌 USB OTG Setup (Required)
 
