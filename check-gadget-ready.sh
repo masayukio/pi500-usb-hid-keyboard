@@ -14,8 +14,11 @@ GADGET_DIR="/sys/kernel/config/usb_gadget/pi500hid"
 UDC="$(cat "$GADGET_DIR/UDC" 2>/dev/null)"
 [ -n "$UDC" ] || exit 1
 
-# hidg0 が無い
+# hidg0 (keyboard) が無い
 [ -e /dev/hidg0 ] || exit 1
+
+# hidg1 (mouse) が無い
+[ -e /dev/hidg1 ] || exit 1
 
 exit 0
 

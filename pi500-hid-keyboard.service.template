@@ -6,9 +6,9 @@ Wants=local-fs.target
 
 [Service]
 Type=simple
-ExecStartPre=/usr/bin/bash {{INSTALL_DIR}}/setup-hid-gadget.sh
-ExecStartPre=/usr/bin/bash {{INSTALL_DIR}}/check-gadget-ready.sh
-ExecStart=/bin/bash -c '/usr/bin/python3 {{INSTALL_DIR}}/hid-keyboard-bridge.py --grab & /usr/bin/python3 {{INSTALL_DIR}}/hid-mouse-bridge.py --grab & wait'
+# Wait for USB gadget to be fully ready (max 30 seconds)
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 300); do {{INSTALL_DIR}}/check-gadget-ready.sh && break || sleep 0.1; done'
+ExecStart=/usr/bin/python3 {{INSTALL_DIR}}/pi500-hid-bridge.py --grab
 Restart=no
 KillSignal=SIGINT
 TimeoutStopSec=2
