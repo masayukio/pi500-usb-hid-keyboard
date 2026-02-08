@@ -88,12 +88,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Copy files
 log_info "Copying files..."
 cp -v "$SCRIPT_DIR/hid-keyboard-bridge.py" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/hid-mouse-bridge.py" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/check-gadget-ready.sh" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/setup-hid-gadget.sh" "$INSTALL_DIR/"
-cp -v "$SCRIPT_DIR/report_desc.bin" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/hid-keyboard.bin" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/hid-mouse.bin" "$INSTALL_DIR/"
 
 # Set executable permissions
 chmod +x "$INSTALL_DIR/hid-keyboard-bridge.py"
+chmod +x "$INSTALL_DIR/hid-mouse-bridge.py"
 chmod +x "$INSTALL_DIR/check-gadget-ready.sh"
 chmod +x "$INSTALL_DIR/setup-hid-gadget.sh"
 

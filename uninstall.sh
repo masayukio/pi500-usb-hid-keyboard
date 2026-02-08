@@ -7,7 +7,7 @@ set -euo pipefail
 # Default installation directory
 INSTALL_DIR="${INSTALL_DIR:-/opt/pi500-hid-keyboard}"
 SYSTEMD_SERVICE_NAME="pi500-hid-keyboard.service"
-GADGET_NAME="pi500kbd"
+GADGET_NAME="pi500hid"
 GADGET_DIR="/sys/kernel/config/usb_gadget/$GADGET_NAME"
 
 # Color output helpers

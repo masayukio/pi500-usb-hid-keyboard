@@ -1,5 +1,5 @@
 [Unit]
-Description=Pi 500+ Internal Keyboard -> USB HID (OTG at boot)
+Description=Pi 500+ Internal Keyboard+Mouse -> USB HID (OTG at boot)
 ConditionPathExists=/sys/class/udc
 After=local-fs.target sysinit.target
 Wants=local-fs.target
@@ -8,7 +8,7 @@ Wants=local-fs.target
 Type=simple
 ExecStartPre=/usr/bin/bash {{INSTALL_DIR}}/setup-hid-gadget.sh
 ExecStartPre=/usr/bin/bash {{INSTALL_DIR}}/check-gadget-ready.sh
-ExecStart=/usr/bin/python3 {{INSTALL_DIR}}/hid-keyboard-bridge.py --grab
+ExecStart=/bin/bash -c '/usr/bin/python3 {{INSTALL_DIR}}/hid-keyboard-bridge.py --grab & /usr/bin/python3 {{INSTALL_DIR}}/hid-mouse-bridge.py --grab & wait'
 Restart=no
 KillSignal=SIGINT
 TimeoutStopSec=2

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-GADGET=pi500kbd
+GADGET=pi500hid
 BASE=/sys/kernel/config/usb_gadget
 G=$BASE/$GADGET
 
@@ -53,6 +53,7 @@ if [ -d "$G" ]; then
 
   # Remove functions
   rmdir "$G/functions/hid.usb0" 2>/dev/null || true
+  rmdir "$G/functions/hid.usb1" 2>/dev/null || true
   rmdir "$G/functions" 2>/dev/null || true
 
   # Remove strings
@@ -71,41 +72,49 @@ cd "$G"
 
 # Device IDs
 echo 0x1d6b > idVendor      # Linux Foundation
-echo 0x0104 > idProduct     # HID gadget
+echo 0x0104 > idProduct     # Multifunction HID gadget
 echo 0x0100 > bcdDevice
 echo 0x0200 > bcdUSB
 
 # Strings
 mkdir -p strings/0x409
-echo "pi500kbd001"            > strings/0x409/serialnumber
-echo "Raspberry Pi"           > strings/0x409/manufacturer
-echo "Pi 500+ USB Keyboard"   > strings/0x409/product
+echo "pi500hid001"              > strings/0x409/serialnumber
+echo "Raspberry Pi"             > strings/0x409/manufacturer
+echo "Pi 500+ USB Keyboard+Mouse" > strings/0x409/product
 
 # Configuration
 mkdir -p configs/c.1/strings/0x409
-echo "HID Keyboard" > configs/c.1/strings/0x409/configuration
-echo 250            > configs/c.1/MaxPower
+echo "HID Keyboard+Mouse" > configs/c.1/strings/0x409/configuration
+echo 250                  > configs/c.1/MaxPower
 
-# ---- HID function --------------------------------------------
+# ---- HID Keyboard function -----------------------------------
 
-log "Creating HID function"
+log "Creating HID keyboard function"
 mkdir -p functions/hid.usb0
 
 echo 1 > functions/hid.usb0/protocol   # Keyboard
 echo 1 > functions/hid.usb0/subclass   # Boot keyboard
 echo 8 > functions/hid.usb0/report_length
 
-# Windows-safe boot keyboard report descriptor
-#cat << 'EOF' | xxd -r -p > functions/hid.usb0/report_desc
-#05010906a101050719e029e715002501750195088102
-#950175088103
-#95067508150025650507190029658100c0
-#EOF
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-cat "$SCRIPT_DIR/report_desc.bin" > functions/hid.usb0/report_desc
+cat "$SCRIPT_DIR/hid-keyboard.bin" > functions/hid.usb0/report_desc
 
-# Link function
+# Link keyboard function
 ln -s functions/hid.usb0 configs/c.1/
+
+# ---- HID Mouse function --------------------------------------
+
+log "Creating HID mouse function"
+mkdir -p functions/hid.usb1
+
+echo 2 > functions/hid.usb1/protocol   # Mouse
+echo 1 > functions/hid.usb1/subclass   # Boot mouse
+echo 4 > functions/hid.usb1/report_length
+
+cat "$SCRIPT_DIR/hid-mouse.bin" > functions/hid.usb1/report_desc
+
+# Link mouse function
+ln -s functions/hid.usb1 configs/c.1/
 
 # ---- bind UDC ------------------------------------------------
 

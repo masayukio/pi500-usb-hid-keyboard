@@ -2,7 +2,7 @@
 # Exit 0: OTG ready
 # Exit 1: not OTG
 
-GADGET_DIR="/sys/kernel/config/usb_gadget/pi500kbd"
+GADGET_DIR="/sys/kernel/config/usb_gadget/pi500hid"
 
 # UDC が存在しない
 [ -d /sys/class/udc ] || exit 1
