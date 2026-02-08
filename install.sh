@@ -7,6 +7,7 @@ set -euo pipefail
 # Default installation directory
 INSTALL_DIR="${INSTALL_DIR:-/opt/pi500-hid-keyboard}"
 SYSTEMD_SERVICE_NAME="pi500-hid-keyboard.service"
+KEYBOARD_LAYOUT="${KEYBOARD_LAYOUT:-}"
 
 # Color output helpers
 RED='\033[0;31m'
@@ -77,7 +78,22 @@ if ! python3 -c "import evdev" 2>/dev/null; then
     apt-get install -y python3-evdev
 fi
 
+# Prompt for keyboard layout if not already set
+if [ -z "$KEYBOARD_LAYOUT" ]; then
+    echo ""
+    log_info "Select keyboard layout:"
+    echo "  1) US (default)"
+    echo "  2) JIS (Japanese)"
+    read -p "Enter choice [1-2]: " -n 1 -r
+    echo
+    case "$REPLY" in
+        2) KEYBOARD_LAYOUT="jis" ;;
+        *) KEYBOARD_LAYOUT="us" ;;
+    esac
+fi
+
 log_info "Installing Pi500 HID Keyboard to: $INSTALL_DIR"
+log_info "Keyboard layout: $KEYBOARD_LAYOUT"
 
 # Create installation directory
 mkdir -p "$INSTALL_DIR"
@@ -90,8 +106,18 @@ log_info "Copying files..."
 cp -v "$SCRIPT_DIR/pi500-hid-bridge.py" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/check-gadget-ready.sh" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/setup-hid-gadget.sh" "$INSTALL_DIR/"
-cp -v "$SCRIPT_DIR/hid-keyboard.bin" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/hid-keyboard-us.bin" "$INSTALL_DIR/"
+cp -v "$SCRIPT_DIR/hid-keyboard-jis.bin" "$INSTALL_DIR/"
 cp -v "$SCRIPT_DIR/hid-mouse.bin" "$INSTALL_DIR/"
+
+# Save keyboard layout configuration
+log_info "Saving keyboard layout configuration..."
+cat > "$INSTALL_DIR/keyboard-layout.conf" <<EOF
+# Pi500 HID Keyboard Configuration
+# Supported values: us, jis
+KEYBOARD_LAYOUT=$KEYBOARD_LAYOUT
+EOF
+log_info "Keyboard layout '$KEYBOARD_LAYOUT' saved to keyboard-layout.conf"
 
 # Set executable permissions
 chmod +x "$INSTALL_DIR/pi500-hid-bridge.py"
@@ -109,9 +135,9 @@ else
     exit 1
 fi
 
-# Setup USB HID gadget
+# Setup USB HID gadget with config file path
 log_info "Setting up USB HID gadget..."
-if "$INSTALL_DIR/setup-hid-gadget.sh"; then
+if "$INSTALL_DIR/setup-hid-gadget.sh" --config "$INSTALL_DIR/keyboard-layout.conf"; then
     log_info "USB HID gadget configured successfully"
 else
     log_error "Failed to setup USB HID gadget"

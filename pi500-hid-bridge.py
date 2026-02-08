@@ -160,8 +160,8 @@ def write_report(fd: int, report: bytes) -> None:
                 raise
             time.sleep(0.01)
         except BrokenPipeError as e:
-            # EPIPE/ENOTCONN: USB gadget endpoint not yet established
-            if e.errno not in (errno.EPIPE, errno.ENOTCONN):
+            # EPIPE/ENOTCONN/ESHUTDOWN: USB gadget endpoint not yet established
+            if e.errno not in (errno.EPIPE, errno.ENOTCONN, errno.ESHUTDOWN):
                 raise
             retry_count += 1
             if retry_count >= max_retries:
@@ -242,14 +242,17 @@ def pick_mouse_device() -> Optional[InputDevice]:
 def setup_hid_gadget(script_dir: Path) -> bool:
     """Call setup-hid-gadget.sh to configure USB gadget."""
     script_path = script_dir / "setup-hid-gadget.sh"
+    config_path = script_dir / "keyboard-layout.conf"
+
     if not script_path.exists():
         log(f"ERROR: setup-hid-gadget.sh not found at {script_path}")
         return False
 
     try:
         log("Setting up USB HID gadget...")
+        # Pass config file path as parameter
         result = subprocess.run(
-            [str(script_path)],
+            [str(script_path), "--config", str(config_path)],
             check=True,
             capture_output=True,
             text=True

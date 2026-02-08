@@ -17,6 +17,7 @@ on a connected host (Windows or Linux) via USB-C OTG.
 
 - Raspberry Pi 500+ acts as a **standard USB keyboard and mouse**
 - Bridges built-in keyboard and external USB mouse to USB HID gadgets
+- **Multiple keyboard layouts supported**: US and JIS (Japanese)
 - Dynamic mouse attach/detach support
 - Linux USB HID gadget (configfs)
 - systemd-based auto startup (USB gadget automatically configured at boot)
@@ -70,6 +71,11 @@ cd pi500-usb-hid-keyboard
 sudo ./install.sh
 ```
 
+During installation, you'll be prompted to select your keyboard layout:
+- **1) US** (default) - Standard US keyboard layout
+- **2) JIS** - Japanese keyboard layout (106/109 key)
+
+After installation:
 1. Connect Pi500+ USB-C port to the host PC
 2. Start typing on Pi500+ built-in keyboard
 3. Optionally connect a USB mouse to the Pi500+
@@ -95,10 +101,28 @@ Reboot is recommended after uninstall.
 
 ---
 
+## ⚙️ Configuration
+
+### Keyboard Layout
+
+The keyboard layout is stored in `/opt/pi500-hid-keyboard/keyboard-layout.conf`. To change the layout after installation:
+
+1. Edit the configuration file:
+   ```bash
+   sudo nano /opt/pi500-hid-keyboard/keyboard-layout.conf
+   ```
+
+2. Change `KEYBOARD_LAYOUT=us` to `KEYBOARD_LAYOUT=jis` (or vice versa)
+
+3. Restart the service:
+   ```bash
+   sudo systemctl restart pi500-hid-keyboard.service
+   ```
+
 ### Testing Status
 
-- ✅ JIS layout: Fully tested on real hardware
-- ⚠️ US layout: Implementation complete but not validated on hardware yet
+- ✅ **JIS layout**: Fully tested on real hardware
+- ⚠️ **US layout**: Implementation complete but not validated on hardware yet
 
 Feedback and pull requests are welcome!
 

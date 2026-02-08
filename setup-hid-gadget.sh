@@ -9,6 +9,35 @@ G=$BASE/$GADGET
 
 log() { echo "[*] $*"; }
 
+usage() {
+  echo "Usage: $0 [--config <path-to-keyboard-layout.conf>]" >&2
+  exit 1
+}
+
+# ---- parameter parsing ---------------------------------------
+
+CONFIG_FILE_PARAM=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --config)
+      if [ $# -lt 2 ]; then
+        echo "ERROR: --config requires an argument" >&2
+        usage
+      fi
+      CONFIG_FILE_PARAM="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      echo "ERROR: Unknown option: $1" >&2
+      usage
+      ;;
+  esac
+done
+
 # ---- preflight -----------------------------------------------
 
 if [ "$(id -u)" != "0" ]; then
@@ -87,17 +116,66 @@ mkdir -p configs/c.1/strings/0x409
 echo "HID Keyboard+Mouse" > configs/c.1/strings/0x409/configuration
 echo 250                  > configs/c.1/MaxPower
 
+# ---- Keyboard layout configuration ---------------------------
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+# Determine config file path: parameter > default location
+if [ -n "$CONFIG_FILE_PARAM" ]; then
+  CONFIG_FILE="$CONFIG_FILE_PARAM"
+else
+  CONFIG_FILE="$SCRIPT_DIR/keyboard-layout.conf"
+fi
+
+# Read keyboard layout from config file
+KEYBOARD_LAYOUT="us"  # Default
+
+if [ -f "$CONFIG_FILE" ]; then
+  # Read from config file (format: KEYBOARD_LAYOUT=us or KEYBOARD_LAYOUT=jis)
+  LAYOUT_VALUE="$(grep -E '^KEYBOARD_LAYOUT=' "$CONFIG_FILE" | cut -d= -f2 | tr -d ' ' || true)"
+  if [ -n "$LAYOUT_VALUE" ]; then
+    KEYBOARD_LAYOUT="$LAYOUT_VALUE"
+  fi
+  log "Reading keyboard layout from: $CONFIG_FILE"
+else
+  log "Config file not found: $CONFIG_FILE (using default: us)"
+fi
+
+# Validate keyboard layout
+case "$KEYBOARD_LAYOUT" in
+  us|jis)
+    log "Using $KEYBOARD_LAYOUT keyboard layout"
+    ;;
+  *)
+    log "WARNING: Unknown KEYBOARD_LAYOUT '$KEYBOARD_LAYOUT', defaulting to 'us'"
+    KEYBOARD_LAYOUT="us"
+    ;;
+esac
+
 # ---- HID Keyboard function -----------------------------------
 
 log "Creating HID keyboard function"
 mkdir -p functions/hid.usb0
 
 echo 1 > functions/hid.usb0/protocol   # Keyboard
-echo 1 > functions/hid.usb0/subclass   # Boot keyboard
+#echo 1 > functions/hid.usb0/subclass   # Boot keyboard
+echo 0 > functions/hid.usb0/subclass   # Boot keyboard is BIOS 101/102, JP106/109 keyboard should be 0
 echo 8 > functions/hid.usb0/report_length
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-cat "$SCRIPT_DIR/hid-keyboard.bin" > functions/hid.usb0/report_desc
+# Select appropriate HID descriptor based on layout
+if [ "$KEYBOARD_LAYOUT" = "jis" ]; then
+  HID_DESC="$SCRIPT_DIR/hid-keyboard-jis.bin"
+else
+  HID_DESC="$SCRIPT_DIR/hid-keyboard-us.bin"
+fi
+
+if [ ! -f "$HID_DESC" ]; then
+  log "ERROR: HID descriptor not found: $HID_DESC"
+  exit 1
+fi
+
+cat "$HID_DESC" > functions/hid.usb0/report_desc
+log "Using HID descriptor: $(basename "$HID_DESC")"
 
 # Link keyboard function
 ln -s functions/hid.usb0 configs/c.1/
